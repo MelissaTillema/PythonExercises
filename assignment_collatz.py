@@ -28,6 +28,7 @@ def collatz(number):
 
 #print the list without brackets and with comma
 def printalista(numbers):
+    print(f"n:{numbers[0]} -> ", end="" )
     print(*numbers, sep=", ")
 
 x=int(input("Skriv ett tal: "))
