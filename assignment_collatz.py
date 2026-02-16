@@ -25,12 +25,18 @@ def collatz(number):
             numbers.append(number)
         if number == 1:
             return numbers
-
-#print the list without brackets and with comma
+            
+# Print the list without brackets and with comma
 def printalista(numbers):
     print(f"n:{numbers[0]} -> ", end="" )
     print(*numbers, sep=", ")
 
-x=int(input("Skriv ett tal: "))
+while True:
+    x=int(input("Skriv ett tal: "))
+    if x > 0:
+        break
+    print("Talet är inte positivt. Försök igen") 
+        
+
 listvariabel=collatz(x)
 printalista (listvariabel)
