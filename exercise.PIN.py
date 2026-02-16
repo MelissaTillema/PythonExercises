@@ -1,6 +1,9 @@
 #!/bin/python3
 # Author: Melissa
 
+def controlpin(value: str) -> bool:
+    return value.isdigit() and len(value) == 9
+
 def pin(numbers):
     total = 0
     multiplier = 2
@@ -23,14 +26,9 @@ def pin(numbers):
 if __name__ == "__main__":
     while True:
         user_input = (input('Input the first 9 numbers of a 10 number swedish pin: '))
-        if not user_input.isdigit():
-            print("Error: Only numbers are allowed.")
-            continue
-            
-        if len(user_input) != 9:
-            print("Error: You must enter exactly 9 numbers.")
-            continue
-        break
+        if controlpin(user_input):
+            break
+        print("Invalid input. Please enter exactly 9 digits.")
 
     last_number = pin(user_input)
     print("The last number is:", last_number)
