@@ -17,14 +17,20 @@ for x in range(total):
     for locker in range(student - 1, total, student):
         lockers[locker] = action
 
-#Collect final open lockers
-open_lockers = []
+#Collect open lockers
+'''open_lockers = []
 for i, state in enumerate(lockers): #enumerate loops through the list 
     if state == "open":
         open_lockers.append(i + 1) #add the locker number to the list
+'''
+open_lockers = 0
+for state in lockers:
+    if state == "open":
+        open_lockers += 1
+
 
 #print("Final open lockers:", open_lockers)
-print("Total open lockers:", len(open_lockers))
+print("Total open lockers:", (open_lockers))
 
 
 
