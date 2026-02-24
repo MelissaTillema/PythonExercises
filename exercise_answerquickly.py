@@ -22,21 +22,16 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         if "Bra jobbat" in data:
             break
 
-        # Extract full numbers
-        numbers = []
-        current = ""
+            # Receive data from server
+        data = data.strip().replace("?", " ").split()
 
-        # Loop over each character in the string
-        for char in data:
-            if char.isdigit(): # if it is a digit is gets added to current
-                current += char
-            else:
-                if current != "":
-                    numbers.append(int(current))
-                    current = ""
-
+    # Multiply index 2 and 4 (0-based indexing)
+        num1 = int(data[2])
+        num2 = int(data[4])
+        result = num1 * num2
+        
+        # Send result back
+        s.sendall((str(result) + "\n").encode())
+        
         # Checks if there are two numbers and multiplies them
-        if len(numbers) >= 2:
-            result = numbers[0] * numbers[1]
-            s.sendall((str(result) + "\n").encode())
-            print( result)
+        print( result)
