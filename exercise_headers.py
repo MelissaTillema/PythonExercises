@@ -17,7 +17,7 @@ import requests
 # Open domains.txt to read the domain names
 with open("domains.txt", "r") as file:
     for line in file:
-        domain = line.strip() #.strip makes it so that the strings are not called upon as a function
+        domain = line.strip() #removes whitespaces
 
         # Collect the server software
         response = requests.get(f"https://{domain}") 
