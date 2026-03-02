@@ -1,0 +1,85 @@
+#state.yaml
+---
+- name: Enforce system state
+  hosts: ubuntus
+  become: true
+
+  vars:
+    devops_user: devops
+    # Generate password hash with:
+    # openssl passwd -6 cisco123
+    # Replace value below
+    devops_password_hash: "REPLACE_WITH_HASH"
+
+    required_packages:
+      - htop
+    forbidden_packages:
+      - curl
+    marker_file: /root/managed.txt
+
+  tasks:
+
+    - name: Ensure required packages are installed
+      apt:
+        name: "{{ required_packages }}"
+        state: present
+        update_cache: yes
+
+    - name: Ensure forbidden packages are absent
+      apt:
+        name: "{{ forbidden_packages }}"
+        state: absent
+
+    - name: Ensure devops user exists
+      user:
+        name: "{{ devops_user }}"
+        state: present
+        shell: /bin/bash
+        password: "{{ devops_password_hash }}"
+
+    - name: Ensure marker file exists
+      copy:
+        content: "This server is managed by Ansible"
+        dest: "{{ marker_file }}"
+        owner: root
+        group: root
+        mode: '0644'
+
+##################################################################################
+#nostate.yaml
+---
+- name: Revert system state
+  hosts: ubuntus
+  become: true
+
+  vars:
+    devops_user: devops
+    required_packages:
+      - htop
+    forbidden_packages:
+      - curl
+    marker_file: /root/managed.txt
+
+  tasks:
+    - name: Remove required packages
+      apt:
+        name: "{{ required_packages }}"
+        state: absent
+        update_cache: yes
+
+    - name: Reinstall forbidden packages (optional)
+      apt:
+        name: "{{ forbidden_packages }}"
+        state: present
+        update_cache: yes
+
+    - name: Remove devops user
+      user:
+        name: "{{ devops_user }}"
+        state: absent
+        remove: yes   # removes home directory
+
+    - name: Remove marker file
+      file:
+        path: "{{ marker_file }}"
+        state: absent
