@@ -1,0 +1,29 @@
+---
+- name: Install on specific servers
+  hosts: lastthree
+  become: true
+
+  vars:
+    required_packages:
+      - netdata
+    config_file: /etc/netdata/netdata.conf
+
+  tasks:
+    - name: Install netdata
+      apt:
+        name: "{{ required_packages }}"
+        state: present
+        update_cache: yes
+
+    - name: Edit netdata.conf
+      lineinfile:
+        path: "{{ config_file }}"
+        regexp: '^\s*bind socket to IP =.*'
+        line: 'bind socket to IP = 0.0.0.0'
+        backup: yes
+        state: present
+        
+    - name: Restart netdata
+      service:
+        name: netdata
+        state: restarted

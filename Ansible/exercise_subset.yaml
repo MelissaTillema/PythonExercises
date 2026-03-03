@@ -1,0 +1,15 @@
+---
+- name: Configure specific servers
+  hosts: firsttwo
+  become: true
+  tasks:
+    - name: Copy passwd file
+      copy:
+        src: /etc/passwd
+        dest: /root/passwd
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Reboot servers
+      reboot:
