@@ -1,0 +1,56 @@
+---
+- name: Create groups, users and catalogues
+  hosts: ubuntus
+  become: true
+  
+  vars:
+    password: "$6$GsKzCbyFjCAof4.m$KGypLdW5RC9lNxHSCoa6v4qd0Ihjt6cajvucdadwFbHhtdxYPQDWkx26hY4oXuMV0Nu5T.5lXZHpqUH0D2qJE."
+
+  tasks:
+    - name: Create it group
+      group:
+        name: it
+        state: present
+
+    - name: Create ekonomi group
+      group:
+        name: ekonomi
+        state: present
+      
+    - name: Ensure alice exists
+      user:
+        name: alice
+        state: present
+        shell: /bin/bash
+        password: "{{ password }}"
+        groups: ekonomi
+    
+    - name: Ensure bob exists
+      user:
+        name: bob
+        state: present
+        shell: /bin/bash
+        password: "{{ password }}"
+        groups: it
+
+    - name: Ensure /share exists
+      file:
+        path: /share
+        state: directory
+        mode: '0755'
+
+    - name: Create catalogue /share/it
+      file:
+        path: /share/it
+        state: directory
+        owner: root
+        group: it
+        mode: '0770'
+
+    - name: Create catalogue /share/ekonomi
+      file:
+        path: /share/ekonomi
+        state: directory
+        owner: root
+        group: ekonomi
+        mode: '0770'
