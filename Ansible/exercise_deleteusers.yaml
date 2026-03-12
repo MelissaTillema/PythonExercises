@@ -1,0 +1,42 @@
+---
+- name: Remove groups, users and catalogues
+  hosts: ubuntu
+  become: true
+
+  tasks:
+    - name: Remove bob
+      user:
+        name: bob
+        state: absent
+        remove: yes
+
+    - name: Remove alice
+      user:
+        name: alice
+        state: absent
+        remove: yes
+
+    - name: Remove catalogue /share/it
+      file:
+        path: /share/it
+        state: absent
+
+    - name: Remove /share/ekonomi
+      file:
+        path: /share/ekonomi
+        state: absent
+
+    - name: Remove /share
+      file:
+        path: /share
+        state: absent
+        
+    - name: Remove it group
+      group:
+        name: it
+        state: absent
+
+    - name: Remove ekonomi group
+      group:
+        name: ekonomi
+        state: absent
