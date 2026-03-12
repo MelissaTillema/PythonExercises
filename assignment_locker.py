@@ -2,10 +2,10 @@
 # Author: Jimmy
 # Editor: Melissa
 
-antal=10000
+antal=1000
 
 # S = Stänga, O = öppna
-action = "S"
+skap = "O" * (antal + 1)
 
 # Loopa igenom alla eleverna
 for elevnr in range(1, antal+1):
