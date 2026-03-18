@@ -6,6 +6,8 @@ import nltk #Natural Language Toolkit: text processing library
 from sklearn.model_selection import train_test_split #splits training data into test data
 from sklearn.feature_extraction.text import TfidfVectorizer #converts text to numbers
 from sklearn.naive_bayes import MultinomialNB #the machine learning model
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report #used to evaluate the model
 
 from nltk.corpus import stopwords
@@ -69,18 +71,24 @@ X_train, X_test, y_train, y_test = train_test_split(
 # 5 Train model
 # ----------------------------
 
-model = MultinomialNB()
-
-model.fit(X_train, y_train)
+models = {
+    "Naive Bayes": MultinomialNB(),
+    "Logistic Regression": LogisticRegression(max_iter=1000),
+    "Random Forest": RandomForestClassifier(n_estimators=100, random_state=42)
+}
 
 # ----------------------------
 # 6 Evaluate model
 # ----------------------------
 
-predictions = model.predict(X_test)
+for name, model in models.items():
+    print(f"\n--- {name} ---")
 
-print("Accuracy:", accuracy_score(y_test, predictions))
-print(classification_report(y_test, predictions))
+    model.fit(X_train, y_train)
+    predictions = model.predict(X_test)
+
+    print("Accuracy:", accuracy_score(y_test, predictions))
+    print(classification_report(y_test, predictions))
 
 # ----------------------------
 # 7 Test with a new email
@@ -93,7 +101,7 @@ def predict_email(email_text):
     return prediction
 
 # Example test
-print("Enter email (press ENTER twice to finish):")
+'''print("Enter email (press ENTER twice to finish):")
 
 lines = []
 while True:
@@ -104,4 +112,4 @@ while True:
 
 email = "\n".join(lines)
 result = predict_email(email)
-print("Prediction:", result)
+print("Prediction:", result)'''
