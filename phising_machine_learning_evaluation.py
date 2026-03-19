@@ -17,10 +17,8 @@ from nltk.corpus import stopwords
 
 stop_words = set(stopwords.words('english'))
 
-# ----------------------------
-# 1 Load dataset
-# ----------------------------
 
+# 1 Load dataset
 data = pd.read_csv(r"C:\Users\MTill\Documents\Git repository\PythonExercises\Dataset_10191.csv")
 
 texts = data["TEXT"]
@@ -32,10 +30,7 @@ labels = labels.replace({
     "smishing": "phishing"
 })
 
-# ----------------------------
 # 2 Text preprocessing
-# ----------------------------
-
 def preprocess(text):
 
     text = text.lower()
@@ -50,37 +45,25 @@ def preprocess(text):
 
 texts_clean = texts.apply(preprocess)
 
-# ----------------------------
 # 3 Convert text to numbers
-# ----------------------------
-
 vectorizer = TfidfVectorizer()
 
 X = vectorizer.fit_transform(texts_clean)
 y = labels
 
-# ----------------------------
 # 4 Train / Test split
-# ----------------------------
-
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-# ----------------------------
 # 5 Train model
-# ----------------------------
-
 models = {
     "Naive Bayes": MultinomialNB(),
     "Logistic Regression": LogisticRegression(max_iter=1000),
     "Random Forest": RandomForestClassifier(n_estimators=100, random_state=42)
 }
 
-# ----------------------------
 # 6 Evaluate model
-# ----------------------------
-
 for name, model in models.items():
     print(f"\n--- {name} ---")
 
@@ -89,27 +72,3 @@ for name, model in models.items():
 
     print("Accuracy:", accuracy_score(y_test, predictions))
     print(classification_report(y_test, predictions))
-
-# ----------------------------
-# 7 Test with a new email
-# ----------------------------
-
-def predict_email(email_text):
-    clean = preprocess(email_text)
-    vector = vectorizer.transform([clean])
-    prediction = model.predict(vector)[0]
-    return prediction
-
-# Example test
-'''print("Enter email (press ENTER twice to finish):")
-
-lines = []
-while True:
-    line = input()
-    if line == "":
-        break
-    lines.append(line)
-
-email = "\n".join(lines)
-result = predict_email(email)
-print("Prediction:", result)'''
