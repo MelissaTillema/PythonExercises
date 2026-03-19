@@ -19,7 +19,7 @@ stop_words = set(stopwords.words('english'))
 
 
 # 1 Load dataset
-data = pd.read_csv(r"C:\Users\MTill\Documents\Git repository\PythonExercises\Dataset_10191.csv")
+data = pd.read_csv("Dataset_10191.csv")
 
 texts = data["TEXT"]
 labels = data["LABEL"]
@@ -58,9 +58,9 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 # 5 Train model
 models = {
-    "Naive Bayes": MultinomialNB(),
+    #"Naive Bayes": MultinomialNB(),
     #"Logistic Regression": LogisticRegression(max_iter=1000),
-    #"Random Forest": RandomForestClassifier(n_estimators=100, random_state=42)
+    "Random Forest": RandomForestClassifier(n_estimators=100, random_state=42)
 }
 
 # 6 Evaluate model
