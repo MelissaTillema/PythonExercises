@@ -1,16 +1,17 @@
 #install the packages with: pip install pandas nltk scikit-learn
 import pandas as pd
 import re
-import nltk #Natural Language Toolkit: text processing library
+import nltk
 
-from sklearn.model_selection import train_test_split #splits training data into test data
-from sklearn.feature_extraction.text import TfidfVectorizer #converts text to numbers
-from sklearn.naive_bayes import MultinomialNB #the machine learning model
+from sklearn.model_selection import train_test_split 
+from sklearn.feature_extraction.text import TfidfVectorizer 
+from sklearn.naive_bayes import MultinomialNB 
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, classification_report #used to evaluate the model
+from sklearn.metrics import accuracy_score, classification_report 
 
 from nltk.corpus import stopwords
+
 
 # Download stopwords (only needed first time)
 #nltk.download('stopwords')
@@ -19,7 +20,7 @@ stop_words = set(stopwords.words('english'))
 
 
 # 1 Load dataset
-data = pd.read_csv(r"C:\Users\MTill\Documents\Git repository\PythonExercises\Dataset_10191.csv")
+data = pd.read_csv(r"C:\Users\MTill\Documents\Git repository\PythonExercises\Thesis\Dataset_10191.csv")
 
 texts = data["TEXT"]
 labels = data["LABEL"]

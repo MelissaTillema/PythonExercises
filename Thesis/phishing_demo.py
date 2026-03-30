@@ -19,7 +19,7 @@ stop_words = set(stopwords.words('english'))
 
 
 # 1 Load dataset
-data = pd.read_csv("Dataset_10191.csv")
+data = pd.read_csv(r"C:\Users\MTill\Documents\Git repository\PythonExercises\Thesis\Dataset_10191.csv")
 
 texts = data["TEXT"]
 labels = data["LABEL"]
