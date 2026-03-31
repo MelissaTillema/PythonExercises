@@ -8,10 +8,9 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB 
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, classification_report 
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix 
 
 from nltk.corpus import stopwords
-
 
 # Download stopwords (only needed first time)
 #nltk.download('stopwords')
@@ -65,6 +64,7 @@ models = {
 }
 
 # 6 Evaluate model
+label_order = ["phishing", "safe", "spam"]
 for name, model in models.items():
     print(f"\n--- {name} ---")
 
@@ -73,3 +73,9 @@ for name, model in models.items():
 
     print("Accuracy:", accuracy_score(y_test, predictions))
     print(classification_report(y_test, predictions))
+        
+    # Confusion matrix
+    cm = confusion_matrix(y_test, predictions, labels=label_order)
+    print("Confusion Matrix:")
+    print(f"{label_order}")
+    print(cm)
