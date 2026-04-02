@@ -1,9 +1,0 @@
-storage "file" {
-  path = "{{ vault_storage_path }}"
-}
-listener "tcp" {
-  address = "127.0.0.1:8200"
-  tls_cert_file = "{{ vault_certs_path }}/fullchain.pem"
-  tls_key_file = "{{ vault_certs_path }}/privkey.pem"
-}
-api_addr = "https://{{ vault_domain }}"
