@@ -1,0 +1,209 @@
+---
+- name: Install and configure Vault with Nginx and Certbot using DNS-01
+  hosts: linux
+  become: true
+
+  tasks:
+
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Install required packages
+      ansible.builtin.apt:
+        name:
+          - python3
+          - python3-pip
+          - python3-venv
+          - nginx
+        state: present
+
+    - name: Install snapd
+      ansible.builtin.apt:
+        name: snapd
+        state: present
+
+    - name: Ensure snapd is running
+      ansible.builtin.systemd:
+        name: snapd
+        state: started
+        enabled: true
+
+    - name: Install core snap
+      ansible.builtin.command: snap install core
+      args:
+        creates: /snap/bin/core
+
+    - name: Refresh core snap
+      ansible.builtin.command: snap refresh core
+
+    - name: Install certbot via snap
+      ansible.builtin.command: snap install --classic certbot
+      args:
+        creates: /snap/bin/certbot
+
+    - name: Symlink certbot
+      ansible.builtin.file:
+        src: /snap/bin/certbot
+        dest: /usr/bin/certbot
+        state: link
+        force: true
+
+    - name: Allow certbot plugin installation
+      ansible.builtin.command: snap set certbot trust-plugin-with-root=ok
+
+    - name: Install certbot-dns-azure plugin
+      ansible.builtin.command: snap install certbot-dns-azure
+
+    - name: Connect certbot to dns-azure plugin
+      ansible.builtin.command: snap connect certbot:plugin certbot-dns-azure
+
+    - name: Add HashiCorp GPG key
+      ansible.builtin.apt_key:
+        url: https://apt.releases.hashicorp.com/gpg
+        state: present
+
+    - name: Add HashiCorp repository
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64] https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main"
+        state: present
+
+    - name: Install Vault
+      ansible.builtin.apt:
+        name: vault
+        state: present
+
+    - name: Create Azure DNS plugin configuration file
+      ansible.builtin.template:
+        src: azure_certbot.ini.j2
+        dest: /etc/letsencrypt/azure_certbot.ini
+        mode: "0600"
+
+    - name: Run Certbot to obtain certificate using DNS-01
+      ansible.builtin.command: >
+        certbot certonly --authenticator dns-azure
+        --dns-azure-config /etc/letsencrypt/azure_certbot.ini
+        --preferred-challenges dns-01
+        -d {{ vault_domain }}
+        --email {{ certbot_email }}
+        --agree-tos --non-interactive
+      args:
+        creates: /etc/letsencrypt/live/{{ vault_domain }}/fullchain.pem
+      run_once: true
+
+    # Fetch certs from the node that ran certbot
+    - name: Fetch fullchain.pem
+      ansible.builtin.fetch:
+        src: /etc/letsencrypt/live/{{ vault_domain }}/fullchain.pem
+        dest: /tmp/fullchain.pem
+        flat: true
+      run_once: true
+
+    - name: Fetch privkey.pem
+      ansible.builtin.fetch:
+        src: /etc/letsencrypt/live/{{ vault_domain }}/privkey.pem
+        dest: /tmp/privkey.pem
+        flat: true
+      run_once: true
+
+    # Distribute certs to ALL nodes
+    - name: Copy fullchain.pem to Vault certs directory
+      ansible.builtin.copy:
+        src: /tmp/fullchain.pem
+        dest: "{{ vault_certs_path }}/fullchain.pem"
+        owner: vault
+        group: vault
+        mode: "0600"
+
+    - name: Copy privkey.pem to Vault certs directory
+      ansible.builtin.copy:
+        src: /tmp/privkey.pem
+        dest: "{{ vault_certs_path }}/privkey.pem"
+        owner: vault
+        group: vault
+        mode: "0600"
+
+    - name: Create Vault certs directory
+      ansible.builtin.file:
+        path: "{{ vault_certs_path }}"
+        state: directory
+        owner: vault
+        group: vault
+        mode: "0700"
+
+
+    - name: Add vault domain to /etc/hosts for local resolution
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        line: "127.0.0.1 {{ vault_domain }}"
+        state: present
+
+    - name: Create Vault data directory
+      ansible.builtin.file:
+        path: "{{ vault_storage_path }}"
+        state: directory
+        owner: vault
+        group: vault
+        mode: "0700"
+
+    - name: Create Vault configuration file
+      ansible.builtin.template:
+        src: vault.hcl.j2
+        dest: /etc/vault.d/vault.hcl
+        owner: vault
+        group: vault
+        mode: "0640"
+      notify: Restart Vault
+
+    - name: Create Vault service file
+      ansible.builtin.copy:
+        content: |
+          [Unit]
+          Description=HashiCorp Vault
+          Documentation=https://www.vaultproject.io/docs/
+          Requires=network-online.target
+          After=network-online.target
+
+          [Service]
+          User=vault
+          Group=vault
+          ExecStart=/usr/bin/vault server -config=/etc/vault.d/vault.hcl
+          ExecReload=/bin/kill -HUP $MAINPID
+          KillMode=process
+          Restart=on-failure
+
+          [Install]
+          WantedBy=multi-user.target
+        dest: /etc/systemd/system/vault.service
+        mode: "0644"
+      notify: Restart Vault
+
+    - name: Enable and start Vault service
+      ansible.builtin.systemd:
+        name: vault
+        enabled: true
+        state: started
+
+    - name: Create final Nginx configuration for Vault
+      ansible.builtin.template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/conf.d/vault.conf
+        mode: "0644"
+      notify: Reload Nginx
+
+    - name: Ensure Nginx is running
+      ansible.builtin.systemd:
+        name: nginx
+        state: started
+        enabled: true
+
+  handlers:
+    - name: Reload Nginx
+      ansible.builtin.systemd:
+        name: nginx
+        state: reloaded
+
+    - name: Restart Vault
+      ansible.builtin.systemd:
+        name: vault
+        state: restarted
